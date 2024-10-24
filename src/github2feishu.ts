@@ -1,5 +1,6 @@
 import * as core from '@actions/core'
 import { context } from '@actions/github'
+import {PushEvent} from '@octokit/webhooks-definitions/schema'
 import getTrending from './trend'
 import { sign_with_timestamp, PostToFeishu } from './feishu'
 import { BuildGithubTrendingCard, BuildGithubNotificationCard } from './card'
@@ -30,6 +31,8 @@ export async function PostGithubEvent(): Promise<number | undefined> {
   const sign = sign_with_timestamp(tm, signKey)
 
   const actor = context.actor
+  let committer: string = ''
+  let author: string = ''
   const eventType = context.eventName
   const repo = context.payload.repository?.name || 'junka'
   let status = context.payload.action || 'closed'
@@ -112,7 +115,8 @@ export async function PostGithubEvent(): Promise<number | undefined> {
     case 'pull_request_target':
       break
     case 'push': {
-      const head_commit = context.payload['head_commit']
+      const pushPayload = context.payload as PushEvent
+      const head_commit = pushPayload.head_commit
       console.log(context.payload['ref'])
       const ptext =
         context.payload['ref'].indexOf('refs/tags/') !== -1
@@ -124,7 +128,7 @@ export async function PostGithubEvent(): Promise<number | undefined> {
                 context.payload['ref'].indexOf('refs/heads/') + 11
               )}`
             : ''
-      etitle = `${ptext}\n\nCommits: [${head_commit['id']}](${head_commit['url']})\n\n${head_commit['message']}`
+      etitle = `${ptext}\n\nCommits: [${head_commit?.id}](${head_commit?.url})\n\n${head_commit?.message}`
       status =
         context.payload['created'] === true
           ? 'created'
@@ -132,6 +136,8 @@ export async function PostGithubEvent(): Promise<number | undefined> {
             ? 'force updated'
             : ''
       detailurl = context.payload['compare']
+      committer = head_commit?.committer.name || ''
+      author = head_commit?.author.name || ''
       break
     }
     case 'registry_package':
@@ -166,17 +172,14 @@ export async function PostGithubEvent(): Promise<number | undefined> {
       break
   }
 
-  const color = 'blue'
   const cardmsg = BuildGithubNotificationCard(
     tm,
     sign,
     repo,
     eventType,
-    color,
-    actor,
-    status,
-    etitle,
-    detailurl
+    committer,
+    author,
+    etitle
   )
   return PostToFeishu(webhookId, cardmsg)
 }
