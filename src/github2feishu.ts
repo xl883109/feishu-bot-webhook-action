@@ -1,6 +1,6 @@
 import * as core from '@actions/core'
 import { context } from '@actions/github'
-import {PushEvent} from '@octokit/webhooks-definitions/schema'
+import { PushEvent } from '@octokit/webhooks-definitions/schema'
 import getTrending from './trend'
 import { sign_with_timestamp, PostToFeishu } from './feishu'
 import { BuildGithubTrendingCard, BuildGithubNotificationCard } from './card'
