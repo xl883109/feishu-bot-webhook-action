@@ -1,51 +1,86 @@
-import * as https from 'https'
-import * as crypto from 'crypto'
-import * as core from '@actions/core'
+import { Repository } from './trend'
 
-export function sign_with_timestamp(timestamp: number, key: string): string {
-  const toencstr = `${timestamp}\n${key}`
-  const signature = crypto.createHmac('SHA256', toencstr).digest('base64')
-  return signature
+type NotificationCard = {
+  repo: string
+  eventType: string
+  commiter: string
+  author: string
+  etitle: string
 }
 
-export async function PostToFeishu(
-  id: string,
-  content: string
-): Promise<number | undefined> {
-  return new Promise((resolve, reject) => {
-    const options = {
-      hostname: 'open.feishu.cn',
-      port: 443,
-      path: `/open-apis/bot/v2/hook/${id}`,
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
+type TrendingCard = {
+  object_list_1: Repository[]
+}
+
+type CardData = {
+  template_id: string
+  template_version_name: string
+  template_variable: NotificationCard | TrendingCard
+}
+
+type CardType = {
+  type: string
+  data: CardData
+}
+
+type CardMessage = {
+  timestamp: string
+  sign: string
+  msg_type: string
+  card: CardType
+}
+
+export function BuildGithubNotificationCard(
+  tm: number,
+  sign: string,
+  repo: string,
+  eventType: string,
+  commiter: string,
+  author: string,
+  etitle: string
+): string {
+  const ncard: CardMessage = {
+    timestamp: `${tm}`,
+    sign,
+    msg_type: 'interactive',
+    card: {
+      type: 'template',
+      data: {
+        template_id: 'AAqD1LFNHduzv',
+        template_version_name: '1.0.1',
+        template_variable: {
+          repo,
+          eventType,
+          commiter,
+          author,
+          etitle
+        }
       }
     }
-    const req = https.request(options, res => {
-      const statusCode = res.statusCode
-      res.on('data', d => {
-        process.stdout.write(d)
-        const result: string = d.toString()
-        try {
-          const json = JSON.parse(result)
-          core.debug(json.code)
-          core.debug(json.msg)
-        } catch (err) {
-          console.log(err)
-        }
-      })
+  }
+  console.log('Template id: ', ncard.card.data.template_id)
+  return JSON.stringify(ncard)
+}
 
-      res.on('end', () => {
-        resolve(statusCode)
-      })
-    })
-    req.on('error', e => {
-      console.error(e)
-      reject(e)
-    })
-    req.write(content)
-    console.log(content)
-    req.end()
-  })
+export function BuildGithubTrendingCard(
+  tm: number,
+  sign: string,
+  repos: Repository[]
+): string {
+  const tcard: CardMessage = {
+    timestamp: `${tm}`,
+    sign,
+    msg_type: 'interactive',
+    card: {
+      type: 'template',
+      data: {
+        template_id: 'AAqkpVra76ijV',
+        template_version_name: '1.0.0',
+        template_variable: {
+          object_list_1: repos
+        }
+      }
+    }
+  }
+  return JSON.stringify(tcard)
 }
