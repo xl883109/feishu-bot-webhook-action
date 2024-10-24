@@ -16,6 +16,7 @@ async function PostGithubTrending(
 }
 
 export async function PostGithubEvent(): Promise<number | undefined> {
+  console.log('USE CUSTOMIZED FEISHU ROBOT ACTION')
   const webhook = core.getInput('webhook')
     ? core.getInput('webhook')
     : process.env.FEISHU_BOT_WEBHOOK || ''
