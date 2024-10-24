@@ -45,6 +45,7 @@ export async function PostToFeishu(
       reject(e)
     })
     req.write(content)
+    console.log(content)
     req.end()
   })
 }
