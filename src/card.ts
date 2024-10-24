@@ -3,12 +3,9 @@ import { Repository } from './trend'
 type NotificationCard = {
   repo: string
   eventType: string
-  themeColor: string
-  auser: string
-  avatar: string
-  status: string
+  commiter: string
+  author: string
   etitle: string
-  detailurl: string
 }
 
 type TrendingCard = {
@@ -38,11 +35,9 @@ export function BuildGithubNotificationCard(
   sign: string,
   repo: string,
   eventType: string,
-  color: string,
-  user: string,
-  status: string,
-  etitle: string,
-  detailurl: string
+  commiter: string,
+  author: string,
+  etitle: string
 ): string {
   const ncard: CardMessage = {
     timestamp: `${tm}`,
@@ -51,17 +46,14 @@ export function BuildGithubNotificationCard(
     card: {
       type: 'template',
       data: {
-        template_id: 'AAqkeNyiypMLb',
-        template_version_name: '1.0.8',
+        template_id: 'AAqD1LFNHduzv',
+        template_version_name: '1.0.1',
         template_variable: {
           repo,
           eventType,
-          themeColor: color,
-          auser: user,
-          avatar: 'img_v2_9dd98485-2900-4d65-ada9-e31d1408dcfg',
-          status,
-          etitle,
-          detailurl
+          commiter,
+          author,
+          etitle
         }
       }
     }
