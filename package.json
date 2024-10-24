@@ -4,7 +4,7 @@
   "description": "call webhook for custom feishu bot",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/junka/feishu-bot-webhook-action.git"
+    "url": "git+https://github.com/xl883109/feishu-bot-webhook-action.git"
   },
   "main": "dist/index.js",
   "exports": {
